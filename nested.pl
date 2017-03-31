@@ -14,7 +14,9 @@ use XML::LibXML;
 #specify the file to open, that value coming from the script runner, as well as an output filename. Also, let's kill the script gracefully if it can't create a file
 open(INFILE,$fileinput);
 open(OUTFILE,">modified_$fileinput") || die "cannot create output file\n";
-open(OUTFILE2,">rejects_$fileinput") || die "cannot create output file\n";
+#assigning reject filename to variable for future function
+$rejectFileName = "./rejects_$fileinput";
+open(OUTFILE2,">$rejectFileName") || die "cannot create output file\n";
 binmode OUTFILE, ":utf8";
 
 #for tidy file purposes, we're going to dump a lot of work files into a temp folder, so let's see if the folder already exists and then create it if not there
@@ -37,27 +39,27 @@ while(<INFILE>) {
     #our current incoming lines look like this, separated by tabs: mmsid  oclc  Title  Author  Call_Number Library   Location  Barcode
     #so, the following command uses split to assign these values to the specified variable names
     ($mmsID,$oclcnum,$title,$author,$callnum,$library,$location,$barcode) = split /\t/;
-    if (-e './itemXML/holdinglist_$mmsID.xml') {
+    $holdingsListLoc = "./itemXML/holdinglist_$mmsID.xml";
+    if (-e $holdingsListLoc) {
        #something
     } else {
-      system("curl -L --request GET 'https://api-na.hosted.exlibrisgroup.com/almaws/v1/bibs/$mmsID/holdings?apikey=l7xxc9bd7984f951474a8974d6ed0ef3d712' > ./itemXML/holdinglist_$mmsID.xml"); 
+      system("curl -L --request GET 'https://api-na.hosted.exlibrisgroup.com/almaws/v1/bibs/$mmsID/holdings?apikey=l7xxc9bd7984f951474a8974d6ed0ef3d712' > $holdingsListLoc"); 
     }
     #we’re going to grab each url for a specific holdings and plug it into the next line
      my $parser = XML::LibXML->new();
      
-     my $holdinglistdoc = $parser->parse_file("./itemXML/holdinglist_$mmsID.xml");
+     my $holdinglistdoc = $parser->parse_file($holdingsListLoc);
      foreach my $holdingLab ($holdinglistdoc->findnodes('/holdings/holding')) {
        $holdingID = $holdingLab->findnodes('./holding_id')->to_literal();
-     if (-e './itemXML/iteminfo_$mmsID\_$holdingID.xml') {
+       $itemListLoc = "./itemXML/iteminfo_$mmsID\_$holdingID.xml";
+     if (-e $itemListLoc) {
        #something
      } else {
-       system("curl -L --request GET 'https://api-na.hosted.exlibrisgroup.com/almaws/v1/bibs/$mmsID/holdings/$holdingID/items?limit=100&apikey=l7xxc9bd7984f951474a8974d6ed0ef3d712' > ./itemXML/iteminfo_$mmsID\_$holdingID.xml");  
+       system("curl -L --request GET 'https://api-na.hosted.exlibrisgroup.com/almaws/v1/bibs/$mmsID/holdings/$holdingID/items?limit=100&apikey=l7xxc9bd7984f951474a8974d6ed0ef3d712' > $itemListLoc");  
      } 
-      #now we have an XML file ready for parsing; we'll specify that filename in a variable and then start up the XML parser
-      $xmlFileInput = "./itemXML/iteminfo_$mmsID\_$holdingID.xml";
 
       #assign the incoming file to a parser-related variable
-      my $itemdoc = $parser->parse_file($xmlFileInput);
+      my $itemdoc = $parser->parse_file($itemListLoc);
       #probably important to note at this point you need to know the general XML structure so you know what/where to get desired data in the next few commands
       #let us create a for/each loop for item sections in the XML, and then a sub loop for each interesting section
       #in the sub-loops, we'll fetch values in which we are interested
@@ -104,3 +106,7 @@ while(<INFILE>) {
 #close the input/output files
 close(INFILE);
 close(OUTFILE);
+close(OUTFILE2);
+if (-z $rejectFileName) {
+  system("rm $rejectFileName");
+}
