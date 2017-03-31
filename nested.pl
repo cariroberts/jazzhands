@@ -15,7 +15,7 @@ use XML::LibXML;
 open(INFILE,$fileinput);
 open(OUTFILE,">modified_$fileinput") || die "cannot create output file\n";
 open(OUTFILE2,">rejects_$fileinput") || die "cannot create output file\n";
-
+binmode OUTFILE, ":utf8";
 
 #for tidy file purposes, we're going to dump a lot of work files into a temp folder, so let's see if the folder already exists and then create it if not there
 if (-e './itemXML') {
