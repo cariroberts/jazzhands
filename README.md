@@ -1,2 +1,2 @@
 # jazzhands
-scripts used for creating injestions files for Zasio
+scripts used for creating injestion files for Zasio
