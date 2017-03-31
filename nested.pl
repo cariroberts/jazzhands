@@ -19,7 +19,7 @@ binmode OUTFILE, ":utf8";
 
 #for tidy file purposes, we're going to dump a lot of work files into a temp folder, so let's see if the folder already exists and then create it if not there
 if (-e './itemXML') {
-  system("rm ./itemXML/*");
+  #system("rm ./itemXML/*");
 } else {
   system("mkdir ./itemXML");
 }
