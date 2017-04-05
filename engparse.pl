@@ -41,7 +41,7 @@ while(<INFILE>) {
     #you might have to jiggle this with other input files in case they have more/less fields, comma separated values, only a single value, etc
     #our current incoming lines look like this, separated by tabs: mmsid  oclc  Title  Author  Call_Number Library   Location  Barcode
     #so, the following command uses split to assign these values to the specified variable names
-    ($mmsID,$oclcnum,$title,$author,$callnum,$library,$location,$barcode) = split /\t/;
+    ($barcode) = split /\t/;
  
     #now we have some variable fields populated, particularly the barcode.  Let's go get some other metadata by using an Alma API call.  There are more graceful ways to accomplish this, but I often end up running fetch/parse scripts multiple times to augment results, so I favor a system-level curl call that creates XML files on the local machine, and then comment out the API call in future script runs and just act on the data files it already created
     system("curl -L --request GET 'https://api-na.hosted.exlibrisgroup.com/almaws/v1/items?item_barcode=$barcode&apikey=l7xxc9bd7984f951474a8974d6ed0ef3d712' > ./itemXML/iteminfo_$barcode.xml");
