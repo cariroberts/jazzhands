@@ -57,25 +57,36 @@ while(<INFILE>) {
     #in the sub-loops, we'll fetch values in which we are interested
     #should only be one of each item, holdingdata, and itemdata section, but this is useful logic when you have a doc with many items and repeating subsections
     foreach my $itemrecord ($itemdoc->findnodes('/item')) {
-      #we need copy_ID, holding_ID from holding_data section
-      foreach my $holdingDataSec ($itemrecord->findnodes('./holding_data')) {
-        $copyID = $holdingDataSec->findnodes('./copy_id')->to_literal();
-        $holdingID = $holdingDataSec->findnodes('./holding_id')->to_literal();
-      }
-      #for copyID, we really only care if it's greater than one, so we're going to add it to the callnum variable if greater than one
-      if ($copyID ne "1") {
-        $callnum = $callnum . " copy $copyID";
-      }
-      #we need pid, description, phyical_material_type from item_data section
-      foreach my $itemDataSec ($itemrecord->findnodes('./item_data')) {
-        $pid = $itemDataSec->findnodes('./pid')->to_literal();
-        $description = $itemDataSec->findnodes('./description')->to_literal();
-        $physMatType = $itemDataSec->findnodes('./physical_material_type')->to_literal();
-      }
-    }
-    #knowing that our desired output is the bulk of the original string along with the new fields, let us print appropriately
-    print OUTFILE "$mmsID\t$holdingID\t$pid\t$title\t$author\t$callnum\t$description\t$library\t$location\t$barcode\t$physMatType\n";
-}
+ 	#we need a block for the bibdata
+        foreach my $bibDataSec ($itemrecord->findnodes('./bib_data')) {
+          $title = $bibDataSec->findnodes('./title')->to_literal();
+	  $author = $bibDataSec->findnodes('./author')->to_literal();
+        }
+
+        #we need copy_ID, holding_ID from holding_data section
+        foreach my $holdingDataSec ($itemrecord->findnodes('./holding_data')) {
+          $copyID = $holdingDataSec->findnodes('./copy_id')->to_literal();
+          $holdingID = $holdingDataSec->findnodes('./holding_id')->to_literal();
+	  $callnum = $holdingDataSec->findnodes('./call_number')->to_literal();
+        }
+        #for copyID, we really only care if it's greater than one, so we're going to add it to the callnum variable if greater than one
+        if ($copyID ne "1") {
+          $callnum = $callnum . " copy $copyID";
+        }
+        #we need pid, description, physical_material_type from item_data section
+        foreach my $itemDataSec ($itemrecord->findnodes('./item_data')) {
+          $pid = $itemDataSec->findnodes('./pid')->to_literal();
+          $description = $itemDataSec->findnodes('./description')->to_literal();
+          $physMatType = $itemDataSec->findnodes('./physical_material_type')->to_literal();
+          $library = $itemDataSec->findnodes('./library')->to_literal();
+	  $location = $itemDataSec->findnodes('./location')->to_literal();
+        }
+        if (($library eq "BIZZELL") && ($location eq "STACKS")) {
+	  if (length($barcode)>0) {
+            print OUTFILE "$mmsID\t$holdingID\t$pid\t$title\t$author\t$callnum\t$description\t$library\t$location\t$barcode\t$physMatType\n";
+          } else {
+            print OUTFILE2 "$mmsID\t$holdingID\t$pid\t$title\t$author\t$callnum\t$description\t$library\t$location\t$barcode\t$physMatType\n";	
+          }
 
 #close the input/output files
 close(INFILE);
