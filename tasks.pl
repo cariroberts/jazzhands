@@ -43,7 +43,7 @@ while(<INFILE>) {
     if (-e $taskListLoc) {
        #something
     } else {
-      system("curl -L --request GET 'https://api-na.hosted.exlibrisgroup.com/almaws/v1/task-lists/$library&$circ_desk/requested-resources?apikey=l7xxc9bd7984f951474a8974d6ed0ef3d712' > $taskListLoc");
+      system("curl -L --request GET 'https://api-na.hosted.exlibrisgroup.com/almaws/v1/task-lists/requested-resources?library=STORAGE&circ_desk=DEFAULT_CIRC_DESK&limit=10&offset=0?apikey=l7xxc9bd7984f951474a8974d6ed0ef3d712' > $taskListLoc");
     }
     
     #we’re going to grab each url for a specific holdings and plug it into the next line
