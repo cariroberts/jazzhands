@@ -34,19 +34,18 @@ while(<INFILE>) {
     #when in doubt, use the following command to strip pesky line break characters that usually exist in text files
     chomp;
 
-    #we're assuming a consistent file structure in the following variable assignment line, namely a number of fields separated by tab characters
-    #you might have to jiggle this with other input files in case they have more/less fields, comma separated values, only a single value, etc
+    #we will be running an API call to retrieve Patron Physical Item requests for Storage
     #our current incoming lines look like this, separated by tabs:  Library  Circ Desk
     #so, the following command uses split to assign these values to the specified variable names
-    ($library,$circ_desk) = split /\t/;
+    #($library,$circ_desk) = split /\t/;
     $taskListLoc = "./itemXML/tasklist_$mmsID.xml";
     if (-e $taskListLoc) {
        #something
     } else {
-      system("curl -L --request GET 'https://api-na.hosted.exlibrisgroup.com/almaws/v1/task-lists/requested-resources?library=STORAGE&circ_desk=DEFAULT_CIRC_DESK&limit=10&offset=0?apikey=l7xxc9bd7984f951474a8974d6ed0ef3d712' > $taskListLoc");
+      system("curl -L --request GET 'https://api-na.hosted.exlibrisgroup.com/almaws/v1/task-lists/requested-resources?library=STORAGE&circ_desk=DEFAULT_CIRC_DESK&limit=10&offset=0&apikey=l7xx61b940d9c211450e99c500b5bfbbaf92' > $taskListLoc");
     }
     
-    #we’re going to grab each url for a specific holdings and plug it into the next line
+    #we’re going to grab each url for a specific request and plug it into the next line
      my $parser = XML::LibXML->new();
      
      my $holdinglistdoc = $parser->parse_file($holdingsListLoc);
@@ -56,7 +55,7 @@ while(<INFILE>) {
      if (-e $itemListLoc) {
        #something
      } else {
-       system("curl -L --request GET 'https://api-na.hosted.exlibrisgroup.com/almaws/v1/bibs/$mmsID/holdings/$holdingID/items?limit=100&apikey=l7xxc9bd7984f951474a8974d6ed0ef3d712' > $itemListLoc");  
+       system("curl -L --request GET 'https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/$mmsID/requests?request_type=HOLD&status=active&apikey=l7xxa730c5d8d8844676ab5e1607d1161322' > $itemListLoc");  
      } 
 
       #assign the incoming file to a parser-related variable
@@ -89,15 +88,12 @@ while(<INFILE>) {
 	  $barcode = $itemDataSec->findnodes('./barcode')->to_literal();
           $description = $itemDataSec->findnodes('./description')->to_literal();
           $physMatType = $itemDataSec->findnodes('./physical_material_type')->to_literal();
-          $library = $itemDataSec->findnodes('./library')->to_literal();
-	  $location = $itemDataSec->findnodes('./location')->to_literal();
+	  $comment = $itemDataSec ->findnodes('./comment') ->to_literal();
         }
-        if (($library eq "BIZZELL") && ($location eq "STACKS")) {
 	  if (length($barcode)>0) {
-            print OUTFILE "$mmsID\t$holdingID\t$pid\t$title\t$author\t$callnum\t$description\t$library\t$location\t$barcode\t$physMatType\n";
+            print OUTFILE "$mmsID\t$holdingID\t$pid\t$title\t$author\t$callnum\t$description\t$barcode\t$physMatType\n";
           } else {
-            print OUTFILE2 "$mmsID\t$holdingID\t$pid\t$title\t$author\t$callnum\t$description\t$library\t$location\t$barcode\t$physMatType\n";	
-          }
+            print OUTFILE2 "$mmsID\t$holdingID\t$pid\t$title\t$author\t$callnum\t$description\t$barcode\t$physMatType\n";	
         }      
       }  
       
