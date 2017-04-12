@@ -1,9 +1,9 @@
 #!/usr/bin/perl 
 
-$fileinput = shift(@ARGV);
+#$fileinput = shift(@ARGV);
 
 #no argument defined, no run script
-if (length($fileinput) == 0) {
+#if (length($fileinput) == 0) {
         die "** Usage: scriptname.pl filename\n";
    }
 
