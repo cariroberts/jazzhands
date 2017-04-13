@@ -65,7 +65,16 @@ while(<INFILE>) {
       #in the sub-loops, we'll fetch values in which we are interested
       #should only be one of each item, holdingdata, and itemdata section, but this is useful logic when you have a doc with many items and repeating subsections
       foreach my $itemrecord ($itemdoc->findnodes('/items/item')) {
-
+        $title="";
+	$author="";
+	$copyID="";
+	$callnum="";
+	$pid="";
+	$barcode="";
+	$description="";
+	$library="";
+	$location="";
+	
         #we need a block for the bibdata
         foreach my $bibDataSec ($itemrecord->findnodes('./bib_data')) {
           $title = $bibDataSec->findnodes('./title')->to_literal();
