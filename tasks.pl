@@ -21,8 +21,9 @@ system("curl -L --request GET 'https://api-na.hosted.exlibrisgroup.com/almaws/v1
 #we’re going to grab each url for a specific request and plug it into the next line
 my $parser = XML::LibXML->new();
      
-my $holdinglistdoc = $parser->parse_file("requesttasklist");
-foreach my $holdingLib ($holdinglistdoc->findnodes('/requested_resource/resource_metadata')) {
+my $holdinglistdoc = $parser->parse_file("requeststasklist");
+foreach my $resourceLib ($holdinglistdoc->findnodes('/requested_resources/requested_resource')) {
+  foreach my $holdingLib ($resourceLib->findnodes('./resource_metadata')) {
    $mmsID = $holdingLib->findnodes('./mms_id')->to_literal();
    $titlerequestinfo = "./itemXML/titlerequestinfo_$mmsID.xml";
 
@@ -45,6 +46,8 @@ foreach my $holdingLib ($holdinglistdoc->findnodes('/requested_resource/resource
      $barcode = $itemrecord->findnodes('./barcode')->to_literal();
      $physMatType = $itemrecord->findnodes('./material_type')->to_literal();
      $comment = $itemrecord->findnodes('./comment')->to_literal();
+     $comment =~ s/\n//g;
+     $comment =~ s/\r//g;
      $copyID = "";
      $holdingid = "";
      $callnum ="";
@@ -93,6 +96,7 @@ foreach my $holdingLib ($holdinglistdoc->findnodes('/requested_resource/resource
   }
       
   }
+ }
 }
 
 #close the input/output files
