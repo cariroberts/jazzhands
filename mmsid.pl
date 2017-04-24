@@ -55,7 +55,7 @@ while(<INFILE>) {
     if (-e $itemListLoc) {
        #something
     } else {
-       system("curl -L --request GET 'https://api-na.hosted.exlibrisgroup.com/almaws/v1/bibs/$mmsID/holdings/$holdingID/items?limit=100&apikey=l7xxc9bd7984f951474a8974d6ed0ef3d712' > $itemListLoc");  
+       system("curl -L --request GET 'https://api-na.hosted.exlibrisgroup.com/almaws/v1/bibs/$mmsID/holdings/$holdingID/items?limit=750&apikey=l7xxc9bd7984f951474a8974d6ed0ef3d712' > $itemListLoc");  
     } 
 
     #assign the incoming file to a parser-related variable
