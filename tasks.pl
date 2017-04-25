@@ -70,12 +70,13 @@ foreach my $resourceLib ($holdinglistdoc->findnodes('/requested_resources/reques
      foreach my $itemrecord ($itemdoc->findnodes('/item')) {
       #we need copy_ID, holding_ID from holding_data section
       foreach my $holdingDataSec ($itemrecord->findnodes('./holding_data')) {
+       $callnum = $holdingDataSec->findnodes('./call_number')->to_litral();
        $copyID = $holdingDataSec->findnodes('./copy_id')->to_literal();
        $holdingID = $holdingDataSec->findnodes('./holding_id')->to_literal();
       }
       #for copyID, we really only care if it's greater than one, so we're going to add it to the callnum variable if greater than one
       if ($copyID ne "1") {
-        $callnum = $callnum . " copy $copyID";
+	$callnum = $callnum . " copy $copyID";
       }
       #we need pid, description, phyical_material_type from item_data section
       foreach my $itemDataSec ($itemrecord->findnodes('./item_data')) {
