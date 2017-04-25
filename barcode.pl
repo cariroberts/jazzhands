@@ -67,6 +67,7 @@ while(<INFILE>) {
 
  #we need copy_ID, holding_ID from holding_data section
       foreach my $holdingDataSec ($itemrecord->findnodes('./holding_data')) {
+       $callnum = $callnum->findnodes('./call_number')->to_literal();
        $copyID = $holdingDataSec->findnodes('./copy_id')->to_literal();
        $holdingID = $holdingDataSec->findnodes('./holding_id')->to_literal();
       }
