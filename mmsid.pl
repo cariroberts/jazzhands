@@ -13,6 +13,8 @@ use XML::LibXML;
 #now for some file operations
 #specify the file to open, that value coming from the script runner, as well as an output filename. Also, let's kill the script gracefully if it can't create a file
 open(INFILE,$fileinput);
+$counter = 1;
+
 open(OUTFILE,">modified_$fileinput") || die "cannot create output file\n";
 #assigning reject filename to variable for future function
 $rejectFileName = "./rejects_$fileinput";
@@ -52,19 +54,41 @@ while(<INFILE>) {
     foreach my $holdingLab ($holdinglistdoc->findnodes('/holdings/holding')) {
        $holdingID = $holdingLab->findnodes('./holding_id')->to_literal();
        $itemListLoc = "./itemXML/iteminfo_$mmsID\_$holdingID.xml";
-    if (-e $itemListLoc) {
-       #something
-    } else {
-       system("curl -L --request GET 'https://api-na.hosted.exlibrisgroup.com/almaws/v1/bibs/$mmsID/holdings/$holdingID/items?limit=750&apikey=l7xxc9bd7984f951474a8974d6ed0ef3d712' > $itemListLoc");  
-    } 
+
+   #when we use an Alma API call that can potentially have many pages of results, we run the curl command once to get the first set of results...and determine how many results are possible
+    system("curl --request GET 'https://api-na.hosted.exlibrisgroup.com/almaws/v1/bibs/$mmsID/holdings/$holdingID/items?limit=100&offset=0&apikey=l7xxe8a9801f483548eea2a11d08ef3833a8' > itemlist_$holdingID.0.xml");
+    $fileCounter = 0;
+    my $itemparser = XML::LibXML->new();
+    my $itemlist = $itemparser->parse_file("./itemlist_$holdingID.0.xml");
+    foreach my $item ($itemlist->findnodes("/items")) {
+      my $itemcount = $item->findvalue('@total_record_count');
+      if ($itemcount > 100) {
+        for ($i=100;$i<$itemcount;$i = $i+100) {
+          $fileCounter++;
+          system("curl --request GET 'https://api-na.hosted.exlibrisgroup.com/almaws/v1/bibs/$mmsID/holdings/$holdingID/items?limit=100&offset=$i&apikey=l7xxe8a9801f483548eea2a11d08ef3833a8' > itemlist_$holdingID.$fileCounter.xml");
+        }
+      }
+    }
+    $fileCounter++;
+    for ($i=0;$i<$fileCounter;$i++) {
+      my $itemparser = XML::LibXML->new();
+      my $itemlist = $itemparser->parse_file("./itemlist_$holdingID.$i.xml");
+    #  foreach my $itemListing ($itemlist->findnodes('/items/item/item_data')) {
+
+
+    #if (-e $itemListLoc) {
+      #something
+    #} else {
+     #  system("curl -L --request GET 'https://api-na.hosted.exlibrisgroup.com/almaws/v1/bibs/$mmsID/holdings/$holdingID/items?limit=100&apikey=l7xxc9bd7984f951474a8974d6ed0ef3d712' > $itemListLoc");  
+    #} 
 
     #assign the incoming file to a parser-related variable
-    my $itemdoc = $parser->parse_file($itemListLoc);
+   # my $itemdoc = $parser->parse_file($itemListLoc);
     #probably important to note at this point you need to know the general XML structure so you know what/where to get desired data in the next few commands
     #let us create a for/each loop for item sections in the XML, and then a sub loop for each interesting section
     #in the sub-loops, we'll fetch values in which we are interested
     #should only be one of each item, holdingdata, and itemdata section, but this is useful logic when you have a doc with many items and repeating subsections
-    foreach my $itemrecord ($itemdoc->findnodes('/items/item')) {
+    foreach my $itemrecord ($itemlist->findnodes('/items/item')) {
         $title="";
 	$author="";
 	$copyID="";
@@ -102,14 +126,16 @@ while(<INFILE>) {
         }
         if (($library eq "BIZZELL") && ($location eq "STACKS")) {
 	  if (length($barcode)>0) {
+
             print OUTFILE "$mmsID\t$holdingID\t$pid\t$title\t$author\t$callnum\t$description\t$library\t$location\t$barcode\t$physMatType\n";
           } else {
             print OUTFILE2 "$mmsID\t$holdingID\t$pid\t$title\t$author\t$callnum\t$description\t$library\t$location\t$barcode\t$physMatType\n";	
           }
         }      
       }  
-      
     }
+
+  }
 }
 
 #close the input/output files
