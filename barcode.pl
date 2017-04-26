@@ -72,7 +72,7 @@ while(<INFILE>) {
        $holdingID = $holdingDataSec->findnodes('./holding_id')->to_literal();
       }
       #for copyID, we really only care if it's greater than one, so we're going to add it to the callnum variable if greater than one
-      if ($copyID ne "1") {
+      if ($copyID ne "1" and $copyID ne "") {
         $callnum = $callnum . " copy $copyID";
       }
       #we need pid, description, phyical_material_type from item_data section
