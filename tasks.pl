@@ -89,11 +89,11 @@ foreach my $resourceLib ($holdinglistdoc->findnodes('/requested_resources/reques
 	$author = $bibDataSec->findnodes('./author')->to_literal();
       }
       if ($library eq "STORAGE"){
-         print OUTFILE "$mmsID\t$holdingID\t$pid\t$title\t$author\t$callnum\t$description\t$barcode\t$physMatType\t$userid\t$requestid\t$comment\n";
+         print OUTFILE "$mmsID\t$holdingID\t$pid\t$title\t$author\t$callnum\t$description\t$barcode\t$location\t$physMatType\t$userid\t$requestid\t$comment\n";
       } 
     } 
   } else {
-	  print OUTFILE "$mmsID\t$holdingID\t$pid\t$title\t$author\t$callnum\t$description\t$barcode\t$physMatType\t$userid\t$requestid\t$comment\n";
+	  print OUTFILE "$mmsID\t$holdingID\t$pid\t$title\t$author\t$callnum\t$description\t$barcode\t$location\t$physMatType\t$userid\t$requestid\t$comment\n";
   }
       
   }
