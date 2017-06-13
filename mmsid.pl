@@ -2,6 +2,8 @@
 
 $fileinput = shift(@ARGV);
 
+$apikey = "yourkeyhere";
+
 #no argument defined, no run script
 if (length($fileinput) == 0) {
    die "** Usage: scriptname.pl filename\n";
@@ -45,7 +47,7 @@ while(<INFILE>) {
     if (-e $holdingsListLoc) {
        #something
     } else {
-      system("curl -L --request GET 'https://api-na.hosted.exlibrisgroup.com/almaws/v1/bibs/$mmsID/holdings?apikey=l7xxc9bd7984f951474a8974d6ed0ef3d712' > $holdingsListLoc"); 
+      system("curl -L --request GET 'https://api-na.hosted.exlibrisgroup.com/almaws/v1/bibs/$mmsID/holdings?apikey=$apikey' > $holdingsListLoc"); 
     }
     #we’re going to grab each url for a specific holdings and plug it into the next line
     my $parser = XML::LibXML->new();
@@ -56,7 +58,7 @@ while(<INFILE>) {
        $itemListLoc = "./itemXML/iteminfo_$mmsID\_$holdingID.xml";
 
    #when we use an Alma API call that can potentially have many pages of results, we run the curl command once to get the first set of results...and determine how many results are possible
-    system("curl --request GET 'https://api-na.hosted.exlibrisgroup.com/almaws/v1/bibs/$mmsID/holdings/$holdingID/items?limit=100&offset=0&apikey=l7xxe8a9801f483548eea2a11d08ef3833a8' > itemlist_$holdingID.0.xml");
+    system("curl --request GET 'https://api-na.hosted.exlibrisgroup.com/almaws/v1/bibs/$mmsID/holdings/$holdingID/items?limit=100&offset=0&apikey=$apikey' > itemlist_$holdingID.0.xml");
     $fileCounter = 0;
     my $itemparser = XML::LibXML->new();
     my $itemlist = $itemparser->parse_file("./itemlist_$holdingID.0.xml");
@@ -65,7 +67,7 @@ while(<INFILE>) {
       if ($itemcount > 100) {
         for ($i=100;$i<$itemcount;$i = $i+100) {
           $fileCounter++;
-          system("curl --request GET 'https://api-na.hosted.exlibrisgroup.com/almaws/v1/bibs/$mmsID/holdings/$holdingID/items?limit=100&offset=$i&apikey=l7xxe8a9801f483548eea2a11d08ef3833a8' > itemlist_$holdingID.$fileCounter.xml");
+          system("curl --request GET 'https://api-na.hosted.exlibrisgroup.com/almaws/v1/bibs/$mmsID/holdings/$holdingID/items?limit=100&offset=$i&apikey=$apikey' > itemlist_$holdingID.$fileCounter.xml");
         }
       }
     }
@@ -79,7 +81,7 @@ while(<INFILE>) {
     #if (-e $itemListLoc) {
       #something
     #} else {
-     #  system("curl -L --request GET 'https://api-na.hosted.exlibrisgroup.com/almaws/v1/bibs/$mmsID/holdings/$holdingID/items?limit=100&apikey=l7xxc9bd7984f951474a8974d6ed0ef3d712' > $itemListLoc");  
+     #  system("curl -L --request GET 'https://api-na.hosted.exlibrisgroup.com/almaws/v1/bibs/$mmsID/holdings/$holdingID/items?limit=100&apikey=$apikey' > $itemListLoc");  
     #} 
 
     #assign the incoming file to a parser-related variable
