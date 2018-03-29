@@ -33,7 +33,7 @@ while(<INFILE>) {
     ($userID) = split /\t/;
 
     #now we have some variable fields populated, particularly the barcode.  Let's go get some other metadata by using an Alma API call.  There are more graceful ways to accomplish this, but I often end up running fetch/parse scripts multiple times to augment results, so I favor a system-level curl call that creates XML files on the local machine, and then comment out the API call in future script runs and just act on the data files it already created
-    system("curl -L --request GET 'https://api-eu.hosted.exlibrisgroup.com/almaws/v1/users/$userID&user_id_type=all_unique&view=full&expand=fees&apikey=l7xxc9bd7984f951474a8974d6ed0ef3d712' > ./usersXML/userinfo_$userID.xml");
+    system("curl -L --request GET 'https://api-eu.hosted.exlibrisgroup.com/almaws/v1/users/$userID?user_id_type=all_unique&view=full&expand=fees&apikey=l7xxc9bd7984f951474a8974d6ed0ef3d712' > ./usersXML/userinfo_$userID.xml");
 
     #now we have an XML file ready for parsing; we'll specify that filename in a variable and then start up the XML parser
     $xmlFileInput = "./usersXML/userinfo_$userID.xml";
@@ -53,7 +53,7 @@ while(<INFILE>) {
       my $userdoc = $parser->parse_file($xmlFileInput);
 
       foreach my $users ($userdoc->findnodes('/user')) {
-
+        
         #foreach my $userDataSec ($users->findnodes('./userinfo_data')) {
         #  $user_id = $userDataSec->findnodes('./user_id')->to_literal();
         #}
