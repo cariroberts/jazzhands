@@ -1,5 +1,5 @@
 #!/usr/bin/perl 
-
+  
 $fileinput = shift(@ARGV);
 
 #no argument defined, no run script
@@ -17,7 +17,7 @@ open(OUTFILE,">modified_$fileinput") || die "cannot create output file\n";
 binmode OUTFILE, ":utf8";
 
 #for tidy file purposes, we're going to dump a lot of work files into a temp folder, so let's see if the folder already exists and then create it if not there
-if (-e ‘./usersXML') {
+if (-e './usersXML') {
 #  system("rm ./usersXML/*");
 } else {
   system("mkdir ./usersXML");
@@ -32,52 +32,54 @@ while(<INFILE>) {
     chomp;
 
 
-    ($primary_id) = split /\t/;
- 
+    ($user_id) = split /\t/;
+
     #now we have some variable fields populated, particularly the barcode.  Let's go get some other metadata by using an Alma API call.  There are more graceful ways to accomplish this, but I often end up running fetch/parse scripts multiple times to augment results, so I favor a system-level curl call that creates XML files on the local machine, and then comment out the API call in future script runs and just act on the data files it already created
     system("curl -L --request GET 'https://api-eu.hosted.exlibrisgroup.com/almaws/v1/users/users?user_id=$user_id&user_id_type=all_unique&view=full&expand=fees&apikey=l7xxc9bd7984f951474a8974d6ed0ef3d712' > ./usersXML/userinfo_$users.xml");
 
 
 
     #now we have an XML file ready for parsing; we'll specify that filename in a variable and then start up the XML parser
-    $xmlFileInput = “./usersXML/userinfo_$users.xml";
+    $xmlFileInput = "./usersXML/userinfo_$users.xml";
     if(-s $xmlFileInput) {
 
     my $parser = XML::LibXML->new();
-	$primary_id = "";
+        $user_id = "";
+        $primary_id = "";
         $first_name = "";
         $last_name ="";
         $full_name = "";
         $pin_number = "";
         $user_group_desc ="";
         $status_desc = "";
-  
+        $fees = "";
 
     #assign the incoming file to a parser-related variable
     my $userdoc = $parser->parse_file($xmlFileInput);
 
-    foreach my $users ($userdoc->findnodes('/item')) {
+    foreach my $users ($userdoc->findnodes('/user')) {
 
-      foreach my $usersDataSec ($userrecord->findnodes('./userinfo_data')) {
-      $primary_id = $usersDataSec->findnodes(‘./primary_id’)->to_literal(); 
+      foreach my $userDataSec ($userrecord->findnodes('./userinfo_data')) {
+      $user_id = $userDataSec->findnodes('./user_id')->to_literal();
 
       }
-   
-      foreach my $usersDataSec ($userrecord->findnodes(‘./users_data')) {
-        $primary_id = $usersDataSec->findnodes(‘./primary_id’)->to_literal();
-        $first_name = $usersDataSec->findnodes(‘./first_name’)->to_literal();
-        $last_name = $usersDataSec->findnodes(‘./last_name’)->to_literal();
-        $full_name = $usersDataSec->findnodes(‘./full_name’)->to_literal();
-        $pin_number = $usersDataSec->findnodes(‘./pin_number’)->to_literal();
-        $user_group_desc = $usersDataSec->findnodes('./user_group_desc')->to_literal();
-        $status_desc = $usersDataSec->findnodes(‘./status_desc’)->to_literal();
+
+      foreach my $userDataSec ($userrecord->findnodes('./users_data')) {
+        $primary_id = $userDataSec->findnodes('./primary_id')->to_literal();
+        $first_name = $userDataSec->findnodes('./first_name')->to_literal();
+        $last_name = $userDataSec->findnodes('./last_name')->to_literal();
+        $full_name = $userDataSec->findnodes('./full_name')->to_literal();
+        $pin_number = $userDataSec->findnodes('./pin_number')->to_literal();
+        $user_group_desc = $userDataSec->findnodes('./user_group_desc')->to_literal();
+        $status_desc = $userDataSec->findnodes('./status_desc')->to_literal();
+        $fees = $userDataSec->findnodes('./fees')->to_literal();
 
       }
    }
     #knowing that our desired output is the bulk of the original string along with the new fields, let us print appropriately 
-      if(length($primary_id) >2) {
-      print OUTFILE "$primary_id\t$first_name\t$last_name\t$full_name\t$pin_number\t$user_group\t$status_desc\n";
-      }	
+      if(length($user_id) >2) {
+      print OUTFILE "$primary_id\t$first_name\t$last_name\t$full_name\t$pin_number\t$user_group\t$status_des\t$fees\n";
+      }
    }
 }
 
